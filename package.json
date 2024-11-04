@@ -1,0 +1,11 @@
+{
+    "name": "api-conect-beauty",
+    "version": "1.0.0",
+    "main": "api/app.js",
+    "dependencies": {
+        "express": "^4.18.2"
+    },
+    "scripts": {
+        "dev": "node api/app.js"
+    }
+}

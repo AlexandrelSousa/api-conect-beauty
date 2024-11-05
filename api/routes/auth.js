@@ -1,3 +1,11 @@
+// /api/routes/auth.js
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const pool = require('../db');
+
+const router = express.Router();
+
 // No arquivo auth.js
 router.post('/login', async (req, res) => {
     try {
@@ -31,3 +39,5 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Erro ao autenticar usuário.' });
     }
 });
+
+module.exports = router;

@@ -4,6 +4,9 @@ const bcrypt = require('bcryptjs');
 const pool = require('../db');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 router.post('/login', async (req, res) => {
     console.log('Login endpoint foi acessado'); // Log para confirmar acesso

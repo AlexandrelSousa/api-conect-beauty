@@ -14,9 +14,6 @@ app.use(cors);
 
 app.use(express.json());
 
-// CORS Middleware
-// app.use((req, res, next) => cors(req, res, next));
-
 // Test Route
 app.get('/', (req, res) => res.send('API is running'));
 

@@ -9,6 +9,9 @@ const authRoutes = require('./routes/auth'); // Importando as rotas de autentica
 dotenv.config();
 
 const app = express();
+
+app.use(cors);
+
 app.use(express.json());
 
 // CORS Middleware

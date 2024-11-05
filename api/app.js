@@ -5,6 +5,7 @@ const cors = require('./middleware/cors');
 const upload = require('./config/multer');
 const pool = require('./db');
 const authRoutes = require('./routes/auth'); // Importando as rotas de autenticação
+const clienteRoutes = require('./routes/clienteRoutes'); // Importando as rotas de cliente
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.get('/', (req, res) => res.send('API is running'));
 
 // Rota de autenticação
 app.use('/api', authRoutes); // Usando as rotas de autenticação
+app.use('/api/clientes', clienteRoutes);
 
 // Rota para upload de arquivos
 app.post('/upload', upload.single('file'), (req, res) => {

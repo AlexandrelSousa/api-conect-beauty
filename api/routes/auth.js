@@ -24,7 +24,9 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ error: 'Senha inválida' });
         }
 
-        res.json({ message: 'Autenticação bem-sucedida', acessToken: 'token_exemplo' });
+        const acessToken = jwt.sign({username: cnpj.rows[0].nome, cnpj: cnpj.rows[0].cnpj}, process.env.ACESS_TOKEN_SECRET);
+
+        res.json({ message: 'Autenticação bem-sucedida', acessToken: acessToken });
     } catch (error) {
         console.error('Erro ao autenticar usuário:', error);
         res.status(500).json({ error: 'Erro ao autenticar usuário' });

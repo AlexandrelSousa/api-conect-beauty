@@ -17,6 +17,15 @@ app.use(express.json());
 app.use((req, res, next) => cors(req, res, next));
 
 // Test Route
-app.get('/', (req, res) => res.send('API is running'));
+app.get('/', async (req, res) => {
+    try {
+        // Exemplo de uma simples consulta para verificar se a conexão com o banco está funcionando
+        const result = await pool.query('SELECT NOW()'); // Verifica a hora atual no banco de dados
+        res.send(`API is running. Server time: ${result.rows[0].now}`);
+    } catch (error) {
+        console.error("Erro ao consultar o banco de dados:", error); // Log do erro
+        res.status(500).send("Internal Server Error"); // Resposta de erro
+    }
+});
 
 module.exports = app;

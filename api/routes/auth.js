@@ -3,6 +3,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const pool = require('../db');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
 
 router.post('/login', async (req, res) => {
     console.log('Login endpoint foi acessado'); // Log para confirmar acesso
@@ -27,6 +28,7 @@ router.post('/login', async (req, res) => {
         const acessToken = jwt.sign({username: cnpj.rows[0].nome, cnpj: cnpj.rows[0].cnpj}, process.env.ACESS_TOKEN_SECRET);
 
         res.json({ message: 'Autenticação bem-sucedida', acessToken: acessToken });
+
     } catch (error) {
         console.error('Erro ao autenticar usuário:', error);
         res.status(500).json({ error: 'Erro ao autenticar usuário' });

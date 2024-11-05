@@ -13,7 +13,7 @@ const app = express();
 app.use(express.json());
 
 // CORS Middleware
-app.use((req, res, next) => cors(req, res, next));
+//app.use((req, res, next) => cors(req, res, next));
 
 // Test Route
 app.get('/', (req, res) => res.send('API is running'));
@@ -31,6 +31,12 @@ app.get('/users', async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: 'Erro ao buscar usuários' });
     }
+});
+
+// Configurar o servidor para ouvir em uma porta
+const PORT = 3030;
+app.listen(PORT, () => {
+    console.log(`Servidor inicializado na porta ${PORT}`);
 });
 
 module.exports = app;

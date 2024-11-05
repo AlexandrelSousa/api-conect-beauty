@@ -1,19 +1,10 @@
-// /api/middleware/cors.js
-const allowCors = fn => async (req, res) => {
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', 'https://conect-beauty-app.vercel.app'); 
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+const cors = require('cors');
 
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-
-  return await fn(req, res);
+// Configuração do CORS
+const corsOptions = {
+    origin: 'https://conect-beauty-app.vercel.app', // Substitua pela URL do seu front-end
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // Permite cookies, se necessário
 };
 
-module.exports = allowCors;
+app.use(cors(corsOptions));

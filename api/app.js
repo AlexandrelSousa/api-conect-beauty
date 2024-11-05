@@ -21,23 +21,33 @@ app.use(cors);
 app.use(express.json());
 
 // Test Route
-app.get('/', (req, res) => res.send('API is running'));
+app.get('/', (req, res) => {
+    console.log('Rota / foi acessada');
+    res.send('API is running');
+});
 
 // Rota de autenticação
 app.use('/api', authRoutes); // Usando as rotas de autenticação
+console.log('Rota /api configurada');
+
+// Rota de clientes
 app.use('/api/clientes', clienteRoutes);
+console.log('Rota /api/clientes configurada');
 
 // Rota para upload de arquivos
 app.post('/upload', upload.single('file'), (req, res) => {
+    console.log('Rota /upload foi acessada');
     res.send({ message: 'File uploaded successfully' });
 });
 
 // Exemplo de Rota de Conexão com o Banco de Dados
 app.get('/users', async (req, res) => {
+    console.log('Rota /users foi acessada');
     try {
         const result = await pool.query('SELECT * FROM users');
         res.json(result.rows);
     } catch (error) {
+        console.error('Erro ao buscar usuários:', error);
         res.status(500).json({ error: 'Erro ao buscar usuários' });
     }
 });

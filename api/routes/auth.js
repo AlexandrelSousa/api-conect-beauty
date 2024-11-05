@@ -25,7 +25,7 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ error: 'Senha inválida' });
         }
 
-        const acessToken = jwt.sign({username: cnpj.rows[0].nome, cnpj: cnpj.rows[0].cnpj}, process.env.ACESS_TOKEN_SECRET);
+        const acessToken = jwt.sign({ username: user.nome, cnpj: user.cnpj }, process.env.ACESS_TOKEN_SECRET);
 
         res.json({ message: 'Autenticação bem-sucedida', acessToken: acessToken });
 

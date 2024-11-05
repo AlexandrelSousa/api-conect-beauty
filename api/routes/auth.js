@@ -1,44 +1,33 @@
-// /api/routes/auth.js
-const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const pool = require('../db');
-
-const router = express.Router();
-
+// No arquivo auth.js
 router.post('/login', async (req, res) => {
-    const { emailOuCNPJ, senha } = req.body;
-
     try {
-        const user = await pool.query('SELECT * FROM cliente WHERE email = $1', [emailOuCNPJ]);
-        const cnpjUser = await pool.query('SELECT * FROM empreendedora WHERE cnpj = $1', [emailOuCNPJ]);
+        const { emailOuCNPJ, senha } = req.body;
 
-        if (user.rows.length === 0 && cnpjUser.rows.length === 0) {
+        // Verifica se o usuário existe
+        const user = await pool.query('SELECT * FROM cliente WHERE email = $1', [emailOuCNPJ]);
+        const cnpj = await pool.query('SELECT * FROM empreendedora WHERE cnpj = $1', [emailOuCNPJ]);
+
+        if (user.rows.length === 0 && cnpj.rows.length === 0) {
             return res.status(401).json({ message: 'Dados de login incorretos.' });
         }
 
-        let validPassword;
-        let acessToken;
+        // Verifica a senha e gera o token
+        const validPassword = user.rows.length !== 0 
+            ? await bcrypt.compare(senha, user.rows[0].senha)
+            : await bcrypt.compare(senha, cnpj.rows[0].senha);
 
-        if (cnpjUser.rows.length > 0) {
-            validPassword = await bcrypt.compare(senha, cnpjUser.rows[0].senha);
-            if (!validPassword) {
-                return res.status(401).json({ message: 'Nome de usuário ou senha incorretos' });
-            }
-            acessToken = jwt.sign({ username: cnpjUser.rows[0].nome, cnpj: cnpjUser.rows[0].cnpj }, process.env.ACESS_TOKEN_SECRET);
-        } else {
-            validPassword = await bcrypt.compare(senha, user.rows[0].senha);
-            if (!validPassword) {
-                return res.status(401).json({ message: 'Nome de usuário ou senha incorretos' });
-            }
-            acessToken = jwt.sign({ username: user.rows[0].nome, id: user.rows[0].id }, process.env.ACESS_TOKEN_SECRET);
+        if (!validPassword) {
+            return res.status(401).json({ message: 'Nome de usuário ou senha incorretos' });
         }
 
-        res.json({ acessToken });
+        const acessToken = user.rows.length !== 0
+            ? jwt.sign({ username: user.rows[0].nome, id: user.rows[0].id }, process.env.ACESS_TOKEN_SECRET)
+            : jwt.sign({ username: cnpj.rows[0].nome, cnpj: cnpj.rows[0].cnpj }, process.env.ACESS_TOKEN_SECRET);
+
+        res.json({ acessToken: acessToken });
+
     } catch (error) {
-        console.error('Erro ao processar login:', error);
-        res.status(500).json({ message: 'Erro interno do servidor' });
+        console.error('Erro ao autenticar usuário:', error);
+        res.status(500).json({ message: 'Erro ao autenticar usuário.' });
     }
 });
-
-module.exports = router;

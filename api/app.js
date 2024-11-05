@@ -11,6 +11,11 @@ dotenv.config();
 
 const app = express();
 
+app.use((req, res, next) => {
+    console.log(`Requisição recebida: ${req.method} ${req.url}`);
+    next();
+});
+
 app.use(cors);
 
 app.use(express.json());

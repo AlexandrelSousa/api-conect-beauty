@@ -1,4 +1,3 @@
-// /api/app.js
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -6,6 +5,7 @@ const dotenv = require('dotenv');
 const cors = require('./middleware/cors');
 const upload = require('./config/multer');
 const pool = require('./db');
+const PORT = 3030;
 
 dotenv.config();
 
@@ -26,6 +26,10 @@ app.get('/', async (req, res) => {
         console.error("Erro ao consultar o banco de dados:", error); // Log do erro
         res.status(500).send("Internal Server Error"); // Resposta de erro
     }
+});
+
+app.listen(PORT, () => {
+    console.log(`Servidor inicializado na porta ${PORT}`);
 });
 
 module.exports = app;

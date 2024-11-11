@@ -40,17 +40,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
     res.send({ message: 'File uploaded successfully' });
 });
 
-// Exemplo de Rota de Conexão com o Banco de Dados
-app.get('/users', async (req, res) => {
-    console.log('Rota /users foi acessada');
-    try {
-        const result = await pool.query('SELECT * FROM users');
-        res.json(result.rows);
-    } catch (error) {
-        console.error('Erro ao buscar usuários:', error);
-        res.status(500).json({ error: 'Erro ao buscar usuários' });
-    }
-});
+app.use('/api/clientes', clienteRoutes);
 
 // Configurar o servidor para ouvir em uma porta
 const PORT = 3030;

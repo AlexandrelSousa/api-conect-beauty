@@ -9,12 +9,25 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 router.post('/login', async (req, res) => {
-    console.log('Login endpoint foi acessado'); // Log para confirmar acesso
+    console.log('Login endpoint foi acessado');
     try {
         const { emailOuCNPJ, senha } = req.body;
-        console.log(`Dados recebidos para login: ${emailOuCNPJ}, ${senha}`); // Log dos dados recebidos
+        console.log(`Dados recebidos para login: ${emailOuCNPJ}, ${senha}`);
 
-        const userQuery = await pool.query('SELECT * FROM cliente WHERE email = $1', [emailOuCNPJ]);
+        // Expressão regular simples para verificar se é um CNPJ
+        const isCNPJ = /^\d{2}\.\d{3}\.\d{3}\/\d{4}\-\d{2}$/.test(emailOuCNPJ);
+        let userQuery;
+
+        // Verifica se é CNPJ ou Email e define a query correta
+        if (isCNPJ) {
+            console.log("Tentando autenticar com CNPJ");
+            userQuery = await pool.query('SELECT * FROM empresa WHERE cnpj = $1', [emailOuCNPJ]);
+        } else {
+            console.log("Tentando autenticar com Email");
+            userQuery = await pool.query('SELECT * FROM cliente WHERE email = $1', [emailOuCNPJ]);
+        }
+
+        // Verifica se o usuário existe
         if (userQuery.rows.length === 0) {
             console.log('Usuário não encontrado');
             return res.status(400).json({ error: 'Usuário não encontrado' });
@@ -28,7 +41,15 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ error: 'Senha inválida' });
         }
 
-        const acessToken = jwt.sign({ username: user.nome, cnpj: user.cnpj }, process.env.ACESS_TOKEN_SECRET);
+        // Gera o token JWT com os dados específicos do usuário
+        const acessToken = jwt.sign(
+            { 
+                username: user.nome, 
+                cnpj: isCNPJ ? user.cnpj : null, // inclui cnpj se for uma empresa
+                id: isCNPJ ? null : user.id // inclui id se for um cliente
+            }, 
+            process.env.ACESS_TOKEN_SECRET
+        );
 
         res.json({ message: 'Autenticação bem-sucedida', acessToken: acessToken });
 

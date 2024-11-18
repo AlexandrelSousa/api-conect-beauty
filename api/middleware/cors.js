@@ -4,7 +4,7 @@ const cors = require('cors');
 
 // Função para configurar o middleware de CORS
 const corsOptions = {
-    origin: 'https://conect-beauty-app.vercel.app', // URL do front-end
+    origin: ['https://conect-beauty-app.vercel.app', 'https://web.postman.co'], // URL do front-end
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
 };

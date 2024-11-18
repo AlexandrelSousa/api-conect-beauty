@@ -1,7 +1,8 @@
 const express = require('express');
-const pool = require('../config/db');
-const bcrypt = require('bcrypt');
-const upload = require('../config/multer'); 
+const pool = require('../db');
+const bcrypt = require('bcryptjs');
+const upload = require('../config/multer');
+
 const router = express.Router();
 
 router.post('/cadastrar', upload.single('logo'), async (req, res) => {

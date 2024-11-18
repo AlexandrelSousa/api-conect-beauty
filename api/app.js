@@ -5,9 +5,9 @@ const cors = require('./middleware/cors');
 const upload = require('./config/multer');
 const pool = require('./db');
 const authRoutes = require('./routes/auth');
-const clienteRoutes = require('./routes/clienteRoutes');
 const jwt = require('jsonwebtoken');
-const empresaRoutes = require('./api/routes/empresaRoutes');
+const clienteRoutes = require('./routes/clienteRoutes');
+const empresaRoutes = require('./routes/empresaRoutes');
 
 
 dotenv.config();

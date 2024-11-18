@@ -62,6 +62,9 @@ router.get('/', async (req, res) => {
 
     const token = authHeader.split(' ')[1];
 
+    const decoded = jwt.verify(token, process.env.ACESS_TOKEN_SECRET);
+    console.log("inhaaaaaaaiiiii" + decoded)
+
     try {
         const decoded = jwt.verify(token, process.env.ACESS_TOKEN_SECRET);
         console.log("inhaaaaaaaiiiii" + decoded)

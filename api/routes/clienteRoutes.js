@@ -115,8 +115,90 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+router.put('/', async (req, res) => {
+    const token = req.headers['authorization'];
+    const { nome, senha, telefone, email } = req.body;
 
-module.exports = router;
+    if (!nome || !telefone || !email) {
+        return res.status(400).json({ error: 'Nome, telefone e email são obrigatórios.' });
+    }
+
+    if (!token) {
+        return res.status(401).json({ error: 'Token não fornecido' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.ACESS_TOKEN_SECRET);
+        const clientId = decoded.id;
+
+        const clientExists = await pool.query('SELECT * FROM cliente WHERE id = $1', [clientId]);
+
+        if (clientExists.rows.length === 0) {
+            return res.status(404).json({ error: 'Cliente não encontrado' });
+        }
+
+        let hashedPassword;
+        if (senha) {
+            hashedPassword = await bcrypt.hash(senha, 10);
+        }
+
+        const updateQuery = `
+            UPDATE cliente 
+            SET nome = $1, 
+                senha = $2, 
+                telefone = $3, 
+                email = $4 
+            WHERE id = $5
+        `;
+        
+        await pool.query(updateQuery, [
+            nome,
+            senha ? hashedPassword : clientExists.rows[0].senha,
+            telefone,
+            email,
+            clientId
+        ]);
+
+        res.json({ message: 'Cliente atualizado com sucesso' });
+    } catch (error) {
+        console.error('Erro ao atualizar cliente:', error);
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ error: 'Token inválido ou expirado' });
+        }
+        res.status(500).json({ error: 'Erro ao atualizar cliente' });
+    }
+});
+
+app.delete('/', async (req, res) => {
+    const token = req.headers['authorization'];
+
+    if (!token) {
+        return res.status(401).json({ error: 'Token não fornecido' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.ACESS_TOKEN_SECRET);
+        const clientId = decoded.id;
+
+        const clientExists = await pool.query('SELECT * FROM cliente WHERE id = $1', [clientId]);
+
+        if (clientExists.rows.length === 0) {
+            return res.status(404).json({ error: 'Cliente não encontrado' });
+        }
+
+        await pool.query('DELETE FROM agendamento WHERE id_cli = $1', [clientId]);
+
+        await pool.query('DELETE FROM cliente WHERE id = $1', [clientId]);
+
+        res.json({ message: 'Cliente deletado com sucesso' });
+    } catch (error) {
+        console.error('Erro ao deletar cliente:', error);
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ error: 'Token inválido ou expirado' });
+        }
+        res.status(500).json({ error: 'Erro ao deletar cliente' });
+    }
+});
 
 
 module.exports = router;

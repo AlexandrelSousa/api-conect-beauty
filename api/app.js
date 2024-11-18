@@ -38,8 +38,6 @@ app.post('/upload', upload.single('file'), (req, res) => {
     res.send({ message: 'File uploaded successfully' });
 });
 
-app.use('/api/clientes', clienteRoutes);
-
 const PORT = 3030;
 app.listen(PORT, () => {
     console.log(`Servidor inicializado na porta ${PORT}`);

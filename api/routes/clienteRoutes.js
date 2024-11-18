@@ -55,7 +55,8 @@ router.post('/cadastro', async (req, res) => {
     }
 });
 
-app.get('/', async (req, res) => {
+
+router.get('/', async (req, res) => {
     const token = req.headers['authorization'];
 
     if (!token) {
@@ -79,7 +80,6 @@ app.get('/', async (req, res) => {
         return res.status(500).json({ error: 'Erro interno no servidor' });
     }
 });
-
 
 module.exports = router;
 

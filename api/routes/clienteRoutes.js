@@ -81,6 +81,45 @@ router.get('/', async (req, res) => {
     }
 });
 
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const pool = require('../db'); 
+
+router.get('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    if (!Number.isInteger(parseInt(id))) {
+        return res.status(400).json({ error: 'ID inválido. O ID deve ser um número.' });
+    }
+
+    const token = req.headers['authorization'];
+    if (!token) {
+        return res.status(401).json({ error: 'Token não fornecido' });
+    }
+
+    try {
+        jwt.verify(token, process.env.ACESS_TOKEN_SECRET);
+
+        const client = await pool.query('SELECT * FROM cliente WHERE id = $1', [id]);
+
+        if (client.rows.length === 0) {
+            return res.status(404).json({ error: 'Cliente não encontrado' });
+        }
+
+        res.json(client.rows[0]);
+
+    } catch (error) {
+        console.error('Erro ao obter informações do cliente:', error);
+
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ error: 'Token inválido ou expirado' });
+        }
+
+        res.status(500).json({ error: 'Erro interno no servidor ao obter informações do cliente' });
+    }
+});
+
+
 module.exports = router;
 
 

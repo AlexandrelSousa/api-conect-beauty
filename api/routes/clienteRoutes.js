@@ -55,43 +55,31 @@ router.post('/cadastro', async (req, res) => {
     }
 });
 
-router.get('/', async (req, res) => {
-    const authHeader = req.headers['authorization'];
+app.get('/', async (req, res) => {
+    const token = req.headers['authorization'];
 
-    if (!authHeader) {
+    if (!token) {
         return res.status(401).json({ error: 'Token não fornecido' });
     }
 
-    const token = authHeader.split(' ')[1];
-
-    const decoded = jwt.verify(token, process.env.ACESS_TOKEN_SECRET);
-    console.log("inhaaaaaaaiiiii" + decoded)
-
     try {
         const decoded = jwt.verify(token, process.env.ACESS_TOKEN_SECRET);
-        console.log("inhaaaaaaaiiiii" + decoded)
-        if (!decoded.id) {
-            return res.status(401).json({ error: 'Token inválido' });
-        }
-
         const clientId = decoded.id;
 
-        const clientQuery = await pool.query('SELECT * FROM cliente WHERE id = $1', [clientId]);
+        // Consulta ao banco de dados
+        const client = await pool.query('SELECT * FROM cliente WHERE id = $1', [clientId]);
 
-        if (clientQuery.rows.length === 0) {
+        if (client.rows.length === 0) {
             return res.status(404).json({ error: 'Usuário não encontrado' });
         }
 
-        res.json(clientQuery.rows[0]);
-
+        res.json(client.rows[0]);
     } catch (error) {
-        console.error('Erro ao obter informações do usuário:', error);
-        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-            return res.status(401).json({ error: 'Token inválido ou expirado' });
-        }
-        res.status(500).json({ error: 'Erro ao obter informações do usuário' });
+        console.error('Erro ao verificar o token ou ao consultar o banco de dados:', error);
+        return res.status(500).json({ error: 'Erro interno no servidor' });
     }
 });
+
 
 module.exports = router;
 

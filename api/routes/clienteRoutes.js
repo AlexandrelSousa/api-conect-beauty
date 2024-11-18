@@ -169,7 +169,7 @@ router.put('/', async (req, res) => {
     }
 });
 
-app.delete('/', async (req, res) => {
+router.delete('/', async (req, res) => {
     const token = req.headers['authorization'];
 
     if (!token) {

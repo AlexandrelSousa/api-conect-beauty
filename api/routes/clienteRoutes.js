@@ -4,7 +4,6 @@ const bcrypt = require('bcryptjs');
 const pool = require('../db'); // Certifique-se de que o caminho para o arquivo db.js está correto
 const jwt = require('jsonwebtoken');
 
-
 const router = express.Router();
 
 router.post('/cadastro', async (req, res) => {

@@ -4,9 +4,11 @@ const dotenv = require('dotenv');
 const cors = require('./middleware/cors');
 const upload = require('./config/multer');
 const pool = require('./db');
-const authRoutes = require('./routes/auth'); // Importando as rotas de autenticação
-const clienteRoutes = require('./routes/clienteRoutes'); // Importando as rotas de cliente
+const authRoutes = require('./routes/auth');
+const clienteRoutes = require('./routes/clienteRoutes');
 const jwt = require('jsonwebtoken');
+const empresaRoutes = require('./api/routes/empresaRoutes');
+
 
 dotenv.config();
 
@@ -38,7 +40,8 @@ app.post('/upload', upload.single('file'), (req, res) => {
     res.send({ message: 'File uploaded successfully' });
 });
 
-
+app.use('/api/empresa', empresaRoutes);
+console.log('Rota /api/empresa configurada');
 
 const PORT = 3030;
 app.listen(PORT, () => {

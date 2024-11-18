@@ -64,7 +64,7 @@ router.get('/', async (req, res) => {
 
     try {
         const decoded = jwt.verify(token, process.env.ACESS_TOKEN_SECRET);
-
+        console.log(decoded)
         if (!decoded.id) {
             return res.status(401).json({ error: 'Token inválido' });
         }

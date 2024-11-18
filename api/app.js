@@ -6,6 +6,7 @@ const upload = require('./config/multer');
 const pool = require('./db');
 const authRoutes = require('./routes/auth'); // Importando as rotas de autenticação
 const clienteRoutes = require('./routes/clienteRoutes'); // Importando as rotas de cliente
+const jwt = require('jsonwebtoken');
 
 dotenv.config();
 
@@ -26,15 +27,12 @@ app.get('/', (req, res) => {
     res.send('API is running');
 });
 
-// Rota de autenticação
-app.use('/api', authRoutes); // Usando as rotas de autenticação
+app.use('/api', authRoutes);
 console.log('Rota /api configurada');
 
-// Rota de clientes
 app.use('/api/clientes', clienteRoutes);
 console.log('Rota /api/clientes configurada');
 
-// Rota para upload de arquivos
 app.post('/upload', upload.single('file'), (req, res) => {
     console.log('Rota /upload foi acessada');
     res.send({ message: 'File uploaded successfully' });
@@ -42,7 +40,6 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
 app.use('/api/clientes', clienteRoutes);
 
-// Configurar o servidor para ouvir em uma porta
 const PORT = 3030;
 app.listen(PORT, () => {
     console.log(`Servidor inicializado na porta ${PORT}`);

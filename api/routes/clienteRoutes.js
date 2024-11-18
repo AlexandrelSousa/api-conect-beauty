@@ -81,10 +81,6 @@ router.get('/', async (req, res) => {
     }
 });
 
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const pool = require('../db'); 
-
 router.get('/:id', async (req, res) => {
     const { id } = req.params;
 

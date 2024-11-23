@@ -7,8 +7,10 @@ const router = express.Router();
 
 router.post('/cadastrar', upload.single('logo'), async (req, res) => {
     try {
-        const logoPath = req.file ? req.file.path.replace(/\\/g, '/') : null;
-        console.log(logoPath);
+        const logoBuffer = null;
+        if(req.file) {
+            logoBuffer = fs.readFileSync(req.file.path);
+        };
 
         const empresa = {
             cnpj: req.body.cnpj,
@@ -24,7 +26,7 @@ router.post('/cadastrar', upload.single('logo'), async (req, res) => {
             inicio_expediente: req.body.inicio_expediente,
             fim_expediente: req.body.fim_expediente,
             dias_func: req.body.dias_func,
-            logo: logoPath
+            logo: logoBuffer
         };
 
         for (const iterator of Object.keys(req.body)) {

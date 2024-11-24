@@ -4,6 +4,8 @@ const bcrypt = require('bcryptjs');
 const upload = require('../config/multer');
 const fs = require('fs');
 
+const router = express.Router();
+
 router.post('/cadastrar', upload.single('logo'), async (req, res) => {
     try {
         let logoBuffer = null;

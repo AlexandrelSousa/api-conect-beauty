@@ -83,3 +83,5 @@ router.post('/cadastrar', upload.single('logo'), async (req, res) => {
         res.status(500).send('Erro ao registrar empresa.');
     }
 });
+
+module.exports = router;

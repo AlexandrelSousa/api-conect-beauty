@@ -5,12 +5,17 @@ const path = require('path');
 // Caminho para a pasta de uploads
 const uploadsPath = path.resolve(__dirname, '../uploads');
 
-// Verifica se a pasta 'uploads' existe, caso contrário, cria
-if (!fs.existsSync(uploadsPath)) {
-    fs.mkdirSync(uploadsPath, { recursive: true });
-    console.log(`Pasta '${uploadsPath}' criada com sucesso.`);
-} else {
-    console.log(`Pasta '${uploadsPath}' já existe.`);
+// Verifica e cria a pasta de uploads (incluindo diretórios pais, se necessário)
+try {
+    if (!fs.existsSync(uploadsPath)) {
+        fs.mkdirSync(uploadsPath, { recursive: true });
+        console.log(`Pasta '${uploadsPath}' criada com sucesso.`);
+    } else {
+        console.log(`Pasta '${uploadsPath}' já existe.`);
+    }
+} catch (error) {
+    console.error('Erro ao criar pasta de uploads:', error);
+    throw new Error(`Não foi possível criar a pasta de uploads: ${error.message}`);
 }
 
 // Configuração do multer
@@ -24,12 +29,10 @@ const storage = multer.diskStorage({
     }
 });
 
-// Instância do multer com a configuração de armazenamento
-const upload = multer({ 
+const upload = multer({
     storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // Limite opcional de 5MB por arquivo
+    limits: { fileSize: 5 * 1024 * 1024 }, // Limite de tamanho do arquivo (5MB)
     fileFilter: (req, file, cb) => {
-        // Filtro opcional para aceitar apenas tipos específicos de arquivos
         const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
         if (allowedTypes.includes(file.mimetype)) {
             cb(null, true);
@@ -39,5 +42,4 @@ const upload = multer({
     }
 });
 
-// Exporta o multer configurado
 module.exports = upload;

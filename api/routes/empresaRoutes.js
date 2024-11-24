@@ -3,6 +3,7 @@ const pool = require('../db');
 const bcrypt = require('bcryptjs');
 const upload = require('../config/multer');
 const cloudinary = require('../config/cloudinaryConfig'); // Importe a configuração do Cloudinary
+const fs = require('fs'); // Adicione essa linha no topo do arquivo
 
 const router = express.Router();
 

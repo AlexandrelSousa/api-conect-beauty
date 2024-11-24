@@ -2,18 +2,24 @@ const express = require('express');
 const pool = require('../db');
 const bcrypt = require('bcryptjs');
 const upload = require('../config/multer');
-const fs = require('fs');
+const cloudinary = require('../config/cloudinaryConfig'); // Importe a configuração do Cloudinary
 
 const router = express.Router();
 
 router.post('/cadastrar', upload.single('logo'), async (req, res) => {
     try {
-        let logoBuffer = null;
+        let logoUrl = null;
         if (req.file) {
-            // Converte a imagem salva temporariamente para binário
-            logoBuffer = fs.readFileSync(req.file.path);
+            // Faz o upload da imagem para o Cloudinary
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: 'empresas', // Pasta no Cloudinary para armazenar as imagens
+                allowed_formats: ['jpg', 'jpeg', 'png'], // Tipos de arquivo permitidos
+            });
 
-            // Remove o arquivo temporário após conversão
+            // Obtém o URL da imagem após o upload
+            logoUrl = result.secure_url;
+
+            // Remove o arquivo temporário após o upload para o Cloudinary
             fs.unlinkSync(req.file.path);
         }
 
@@ -31,7 +37,7 @@ router.post('/cadastrar', upload.single('logo'), async (req, res) => {
             inicio_expediente: req.body.inicio_expediente,
             fim_expediente: req.body.fim_expediente,
             dias_func: req.body.dias_func, // Recebe como string
-            logo: logoBuffer
+            logo: logoUrl // Agora armazena a URL da imagem no Cloudinary
         };
 
         // Verifica campos obrigatórios
@@ -72,7 +78,7 @@ router.post('/cadastrar', upload.single('logo'), async (req, res) => {
             empresa.dias_func,
             empresa.inicio_expediente,
             empresa.fim_expediente,
-            empresa.logo
+            empresa.logo // Agora armazena a URL da logo do Cloudinary
         ]);
 
         res.status(201).send('Empresa registrada com sucesso.');
@@ -81,6 +87,5 @@ router.post('/cadastrar', upload.single('logo'), async (req, res) => {
         res.status(500).send('Erro ao registrar empresa.');
     }
 });
-
 
 module.exports = router;

@@ -1,45 +1,23 @@
 const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-// Caminho para a pasta de uploads
-const uploadsPath = path.resolve(__dirname, '../uploads');
+// Configure suas credenciais
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-// Verifica e cria a pasta de uploads (incluindo diretórios pais, se necessário)
-try {
-    if (!fs.existsSync(uploadsPath)) {
-        fs.mkdirSync(uploadsPath, { recursive: true });
-        console.log(`Pasta '${uploadsPath}' criada com sucesso.`);
-    } else {
-        console.log(`Pasta '${uploadsPath}' já existe.`);
-    }
-} catch (error) {
-    console.error('Erro ao criar pasta de uploads:', error);
-    throw new Error(`Não foi possível criar a pasta de uploads: ${error.message}`);
-}
-
-// Configuração do multer
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadsPath); // Define a pasta onde os arquivos serão salvos
+// Configure o Multer com Cloudinary
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'uploads', // Define a pasta onde os arquivos serão armazenados
+        allowed_formats: ['jpg', 'png', 'jpeg'],
     },
-    filename: function (req, file, cb) {
-        const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
-        cb(null, uniqueName); // Garante um nome único para cada arquivo
-    }
 });
 
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // Limite de tamanho do arquivo (5MB)
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        if (allowedTypes.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Tipo de arquivo não suportado. Apenas JPEG, PNG e GIF são permitidos.'));
-        }
-    }
-});
+const upload = multer({ storage: storage });
 
 module.exports = upload;

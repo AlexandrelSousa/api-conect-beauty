@@ -4,18 +4,17 @@ const bcrypt = require('bcryptjs');
 const upload = require('../config/multer');
 const fs = require('fs');
 
-const router = express.Router();
-
 router.post('/cadastrar', upload.single('logo'), async (req, res) => {
     try {
-        console.log("Recebendo dados...");
         let logoBuffer = null;
         if (req.file) {
-            console.log("Arquivo recebido:", req.file);
-            logoBuffer = fs.readFileSync(req.file.path); // Verificar se o caminho é válido
+            // Converte a imagem salva temporariamente para binário
+            logoBuffer = fs.readFileSync(req.file.path);
+
+            // Remove o arquivo temporário após conversão
+            fs.unlinkSync(req.file.path);
         }
 
-        console.log("Criando objeto da empresa...");
         const empresa = {
             cnpj: req.body.cnpj,
             senha: req.body.senha,
@@ -26,37 +25,35 @@ router.post('/cadastrar', upload.single('logo'), async (req, res) => {
             logradouro: req.body.logradouro,
             numero: req.body.numero,
             descricao: req.body.descricao,
-            classificacao: req.body.classificacao,
+            classificacao: req.body.classificacao || '0',
             inicio_expediente: req.body.inicio_expediente,
             fim_expediente: req.body.fim_expediente,
-            dias_func: req.body.dias_func,
-            logo: logoBuffer,
+            dias_func: req.body.dias_func, // Recebe como string
+            logo: logoBuffer
         };
 
-        console.log("Validando campos...");
-        for (const iterator of Object.keys(req.body)) {
-            console.log(`Campo ${iterator}:`, req.body[iterator]);
-            if (!req.body[iterator]) {
-                const err = new Error(iterator + ' é obrigatório!');
-                err.status = 400;
-                return res.status(400).json({ message: iterator + ' é obrigatório!' });
+        // Verifica campos obrigatórios
+        for (const key of Object.keys(empresa)) {
+            if (!empresa[key] && key !== 'logo') {
+                return res.status(400).json({ message: `${key} é obrigatório!` });
             }
         }
 
-        console.log("Checando CNPJ no banco...");
-        const cnpjJaExistente = await pool.query('SELECT * FROM empreendedora WHERE cnpj = $1', [req.body.cnpj]);
+        // Verifica duplicidade de CNPJ
+        const cnpjJaExistente = await pool.query('SELECT * FROM empreendedora WHERE cnpj = $1', [empresa.cnpj]);
         if (cnpjJaExistente.rows.length > 0) {
-            console.error("CNPJ já existe!");
             return res.status(400).json({ message: 'O CNPJ fornecido já está em uso.' });
         }
 
-        console.log("Criptografando senha...");
-        const hashedPassword = await bcrypt.hash(req.body.senha, 10);
+        // Gera hash da senha
+        const hashedPassword = await bcrypt.hash(empresa.senha, 10);
 
-        console.log("Inserindo dados no banco...");
+        // Insere os dados no banco
         const insertUserQuery = `
-            INSERT INTO empreendedora 
-            (cnpj, senha, nome, telefone, cidade, bairro, logradouro, numero, descricao, classificacao, dias_func, inicio_expediente, fim_expediente, logo) 
+            INSERT INTO empreendedora (
+                cnpj, senha, nome, telefone, cidade, bairro, logradouro, numero,
+                descricao, classificacao, dias_func, inicio_expediente, fim_expediente, logo
+            )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         `;
         await pool.query(insertUserQuery, [
@@ -73,15 +70,15 @@ router.post('/cadastrar', upload.single('logo'), async (req, res) => {
             empresa.dias_func,
             empresa.inicio_expediente,
             empresa.fim_expediente,
-            empresa.logo,
+            empresa.logo
         ]);
 
-        console.log("Empresa cadastrada com sucesso!");
         res.status(201).send('Empresa registrada com sucesso.');
     } catch (error) {
-        console.error('Erro ao registrar empresa:', error); // Log completo do erro
+        console.error('Erro ao registrar empresa:', error);
         res.status(500).send('Erro ao registrar empresa.');
     }
 });
+
 
 module.exports = router;

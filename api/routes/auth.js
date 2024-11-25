@@ -17,7 +17,7 @@ router.post('/login', async (req, res) => {
         // Verificar se existe o cliente com o email
         const userQuery = await pool.query('SELECT * FROM cliente WHERE email = $1', [emailOuCNPJ]);
         // Verificar se existe a empresa com o CNPJ
-        const empresaQuery = await pool.query('SELECT * FROM empresa WHERE cnpj = $1', [emailOuCNPJ]);
+        const empresaQuery = await pool.query('SELECT * FROM empreendedora WHERE cnpj = $1', [emailOuCNPJ]);
 
         if (userQuery.rows.length === 0 && empresaQuery.rows.length === 0) {
             console.log('Usuário ou empresa não encontrados');

@@ -21,8 +21,10 @@ router.post('/login', async (req, res) => {
         // Verifica se é CNPJ ou Email e define a query correta
         if (isCNPJ) {
             console.log("Tentando autenticar com CNPJ");
-            // Remover a pontuação do CNPJ antes de consultar o banco
+            // Remove a pontuação do CNPJ antes de consultar o banco
             const cnpjFormatado = emailOuCNPJ.replace(/[^\d]+/g, ''); // Remove tudo que não for número
+            console.log(`CNPJ formatado para consulta: ${cnpjFormatado}`);
+
             userQuery = await pool.query('SELECT * FROM empresa WHERE cnpj = $1', [cnpjFormatado]);
         } else {
             console.log("Tentando autenticar com Email");
@@ -36,6 +38,8 @@ router.post('/login', async (req, res) => {
         }
 
         const user = userQuery.rows[0];
+        console.log(`Usuário encontrado: ${user.nome} - CNPJ: ${user.cnpj} - Email: ${user.email}`);
+
         const senhaValida = await bcrypt.compare(senha, user.senha);
 
         if (!senhaValida) {

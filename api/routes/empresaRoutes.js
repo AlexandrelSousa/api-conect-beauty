@@ -9,19 +9,12 @@ const router = express.Router();
 
 router.post('/cadastrar', upload.single('logo'), async (req, res) => {
     try {
-        let logoUrl = null;
+        let logoUrl = null; // Aqui você vai armazenar a URL da imagem no Cloudinary
+
         if (req.file) {
-            // Faz o upload da imagem para o Cloudinary
-            const result = await cloudinary.uploader.upload(req.file.path, {
-                folder: 'empresas', // Pasta no Cloudinary para armazenar as imagens
-                allowed_formats: ['jpg', 'jpeg', 'png'], // Tipos de arquivo permitidos
-            });
-
-            // Obtém o URL da imagem após o upload
-            logoUrl = result.secure_url;
-
-            // Remove o arquivo temporário após o upload para o Cloudinary
-            fs.unlinkSync(req.file.path);
+            // Se o upload for bem-sucedido, o arquivo será automaticamente enviado para o Cloudinary
+            // O arquivo não precisa mais ser removido do sistema de arquivos local
+            logoUrl = req.file.path;  // O caminho para o arquivo será a URL do Cloudinary
         }
 
         const empresa = {
@@ -38,7 +31,7 @@ router.post('/cadastrar', upload.single('logo'), async (req, res) => {
             inicio_expediente: req.body.inicio_expediente,
             fim_expediente: req.body.fim_expediente,
             dias_func: req.body.dias_func, // Recebe como string
-            logo: logoUrl // Agora armazena a URL da imagem no Cloudinary
+            logo: logoUrl
         };
 
         // Verifica campos obrigatórios
@@ -79,7 +72,7 @@ router.post('/cadastrar', upload.single('logo'), async (req, res) => {
             empresa.dias_func,
             empresa.inicio_expediente,
             empresa.fim_expediente,
-            empresa.logo // Agora armazena a URL da logo do Cloudinary
+            empresa.logo // Agora é a URL do Cloudinary
         ]);
 
         res.status(201).send('Empresa registrada com sucesso.');
@@ -88,5 +81,6 @@ router.post('/cadastrar', upload.single('logo'), async (req, res) => {
         res.status(500).send('Erro ao registrar empresa.');
     }
 });
+
 
 module.exports = router;

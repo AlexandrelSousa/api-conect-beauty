@@ -21,7 +21,9 @@ router.post('/login', async (req, res) => {
         // Verifica se é CNPJ ou Email e define a query correta
         if (isCNPJ) {
             console.log("Tentando autenticar com CNPJ");
-            userQuery = await pool.query('SELECT * FROM empresa WHERE cnpj = $1', [emailOuCNPJ]);
+            // Remover a pontuação do CNPJ antes de consultar o banco
+            const cnpjFormatado = emailOuCNPJ.replace(/[^\d]+/g, ''); // Remove tudo que não for número
+            userQuery = await pool.query('SELECT * FROM empresa WHERE cnpj = $1', [cnpjFormatado]);
         } else {
             console.log("Tentando autenticar com Email");
             userQuery = await pool.query('SELECT * FROM cliente WHERE email = $1', [emailOuCNPJ]);

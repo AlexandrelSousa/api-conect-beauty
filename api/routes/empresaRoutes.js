@@ -82,5 +82,22 @@ router.post('/cadastrar', upload.single('logo'), async (req, res) => {
     }
 });
 
+router.get('/todas', async (req, res) => {
+    try {
+        // Consulta todas as empresas na tabela empreendedora
+        const empresas = await pool.query('SELECT nome, descricao, cnpj, logo FROM empreendedora');
+
+        // Verifica se foram encontradas empresas
+        if (empresas.rows.length === 0) {
+            return res.status(404).json({ error: 'Nenhuma empresa encontrada' });
+        }
+
+        // Retorna as informações das empresas
+        res.json(empresas.rows);
+    } catch (error) {
+        console.error('Erro ao obter informações das empresas:', error);
+        res.status(500).json({ error: 'Erro ao obter informações das empresas' });
+    }
+});
 
 module.exports = router;

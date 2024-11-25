@@ -14,54 +14,48 @@ router.post('/login', async (req, res) => {
         const { emailOuCNPJ, senha } = req.body;
         console.log(`Dados recebidos para login: ${emailOuCNPJ}, ${senha}`);
 
-        // Expressão regular simples para verificar se é um CNPJ
-        const isCNPJ = /^\d{2}\.\d{3}\.\d{3}\/\d{4}\-\d{2}$/.test(emailOuCNPJ);
-        let userQuery;
+        // Verificar se existe o cliente com o email
+        const userQuery = await pool.query('SELECT * FROM cliente WHERE email = $1', [emailOuCNPJ]);
+        // Verificar se existe a empresa com o CNPJ
+        const empresaQuery = await pool.query('SELECT * FROM empresa WHERE cnpj = $1', [emailOuCNPJ]);
 
-        // Verifica se é CNPJ ou Email e define a query correta
-        if (isCNPJ) {
-            console.log("Tentando autenticar com CNPJ");
-            // Remove a pontuação do CNPJ antes de consultar o banco
-            const cnpjFormatado = emailOuCNPJ.replace(/[^\d]+/g, ''); // Remove tudo que não for número
-            console.log(`CNPJ formatado para consulta: ${cnpjFormatado}`);
-
-            userQuery = await pool.query('SELECT * FROM empresa WHERE cnpj = $1', [cnpjFormatado]);
-        } else {
-            console.log("Tentando autenticar com Email");
-            userQuery = await pool.query('SELECT * FROM cliente WHERE email = $1', [emailOuCNPJ]);
+        if (userQuery.rows.length === 0 && empresaQuery.rows.length === 0) {
+            console.log('Usuário ou empresa não encontrados');
+            return res.status(401).json({ message: 'Dados de login incorretos' });
         }
 
-        // Verifica se o usuário existe
-        if (userQuery.rows.length === 0) {
-            console.log('Usuário não encontrado');
-            return res.status(400).json({ error: 'Usuário não encontrado' });
+        let user, isEmpresa = false;
+
+        if (userQuery.rows.length > 0) {
+            user = userQuery.rows[0];
+        } else if (empresaQuery.rows.length > 0) {
+            user = empresaQuery.rows[0];
+            isEmpresa = true;
         }
 
-        const user = userQuery.rows[0];
-        console.log(`Usuário encontrado: ${user.nome} - CNPJ: ${user.cnpj} - Email: ${user.email}`);
-
+        // Verificar a senha
         const senhaValida = await bcrypt.compare(senha, user.senha);
 
         if (!senhaValida) {
             console.log('Senha inválida');
-            return res.status(400).json({ error: 'Senha inválida' });
+            return res.status(401).json({ message: 'Nome de usuário ou senha incorretos' });
         }
 
-        // Gera o token JWT com os dados específicos do usuário
+        // Gerar o token JWT
         const acessToken = jwt.sign(
-            { 
-                username: user.nome, 
-                cnpj: isCNPJ ? user.cnpj : null, // inclui cnpj se for uma empresa
-                id: isCNPJ ? null : user.id // inclui id se for um cliente
-            }, 
+            {
+                username: user.nome,
+                cnpj: isEmpresa ? user.cnpj : null,  // Inclui o CNPJ se for empresa
+                id: isEmpresa ? null : user.id  // Inclui o id se for cliente
+            },
             process.env.ACESS_TOKEN_SECRET
         );
 
-        res.json({ message: 'Autenticação bem-sucedida', acessToken: acessToken });
+        res.json({ acessToken: acessToken });
 
     } catch (error) {
         console.error('Erro ao autenticar usuário:', error);
-        res.status(500).json({ error: 'Erro ao autenticar usuário' });
+        res.status(500).json({ message: 'Erro ao autenticar usuário' });
     }
 });
 

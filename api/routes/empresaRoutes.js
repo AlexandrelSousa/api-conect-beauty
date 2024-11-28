@@ -146,5 +146,42 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+router.put('/', async (req, res) => {
+    const token = req.headers['authorization'];
+    const {
+        senha, nome, telefone, cidade, bairro, logradouro, numero,
+        descricao, classificacao, inicio_expediente, fim_expediente, dias_func
+    } = req.body;
+
+    try {
+        const empresaCnpj = jwt.decode(token).cnpj;
+
+        const empresaExists = await pool.query('SELECT * FROM empreendedora WHERE cnpj = $1', [empresaCnpj]);
+        if (empresaExists.rows.length === 0) {
+            console.log(`Empresa com CNPJ ${empresaCnpj} não encontrada`);
+            return res.status(404).json({ error: 'Empresa não encontrada' });
+        }
+
+        const hashedPassword = await bcrypt.hash(senha, 10);
+
+        const updateQuery = `
+            UPDATE empreendedora 
+            SET senha = $1, nome = $2, telefone = $3, cidade = $4, bairro = $5, 
+                logradouro = $6, numero = $7, descricao = $8, classificacao = $9, 
+                inicio_expediente = $10, fim_expediente = $11, dias_func = $12  
+            WHERE cnpj = $13
+        `;
+        await pool.query(updateQuery, [
+            hashedPassword, nome, telefone, cidade, bairro, logradouro, numero,
+            descricao, classificacao, inicio_expediente, fim_expediente, dias_func, empresaCnpj
+        ]);
+
+        res.json({ message: 'Informações da empresa atualizadas com sucesso' });
+    } catch (error) {
+        console.error('Erro ao atualizar informações da empresa:', error);
+        res.status(500).json({ error: 'Erro ao atualizar informações da empresa' });
+    }
+});
+
 
 module.exports = router;

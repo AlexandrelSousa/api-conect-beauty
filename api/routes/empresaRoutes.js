@@ -184,5 +184,30 @@ router.put('/', async (req, res) => {
     }
 });
 
+app.delete('/', async (req, res) => {
+    const token = req.headers['authorization'];
+
+    try {
+        const empresaId = jwt.decode(token).cnpj;
+
+        const empresaExists = await pool.query('SELECT * FROM empreendedora WHERE cnpj = $1', [empresaId]);
+        if (empresaExists.rows.length === 0) {
+            return res.status(404).json({ error: 'Empresa não encontrada' });
+        }
+
+        await pool.query('DELETE FROM agendamento WHERE id_emp = $1', [empresaId]);
+
+        await pool.query('DELETE FROM procedimento WHERE cnpj = $1', [empresaId]);
+
+        await pool.query('DELETE FROM empreendedora WHERE cnpj = $1', [empresaId]);
+
+        res.json({ message: 'Empresa deletada com sucesso' });
+
+    } catch (error) {
+        console.error('Erro ao deletar empresa:', error);
+        res.status(500).json({ error: 'Erro ao deletar empresa' });
+    }
+});
+
 
 module.exports = router;

@@ -121,28 +121,28 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.get('/clientes/:id', async (req, res) => {
-    const clientId = req.params.id;
+router.get('/:id', async (req, res) => {
+    const empresaId = req.params.id;
 
     try {
-        // Consulta o banco de dados para obter as informações do cliente
-        const clienteQuery = await pool.query(
-            'SELECT nome, email, telefone FROM cliente WHERE id = $1',
-            [clientId]
+        // Consulta o banco de dados para obter as informações da empresa
+        const empresaQuery = await pool.query(
+            'SELECT nome, descricao, cnpj, logo FROM empreendedora WHERE id = $1',
+            [empresaId]
         );
 
-        // Verifica se o cliente foi encontrado
-        if (clienteQuery.rows.length === 0) {
-            console.log(`Cliente com ID ${clientId} não encontrado`);
-            return res.status(404).json({ error: 'Cliente não encontrado' });
+        // Verifica se a empresa foi encontrada
+        if (empresaQuery.rows.length === 0) {
+            console.log(`Empresa com ID ${empresaId} não encontrada`);
+            return res.status(404).json({ error: 'Empresa não encontrada' });
         }
 
-        // Retorna as informações do cliente
-        res.json(clienteQuery.rows[0]);
+        // Retorna as informações da empresa
+        res.json(empresaQuery.rows[0]);
 
     } catch (error) {
-        console.error('Erro ao obter informações do cliente:', error);
-        res.status(500).json({ error: 'Erro ao obter informações do cliente' });
+        console.error('Erro ao obter informações da empresa:', error);
+        res.status(500).json({ error: 'Erro ao obter informações da empresa' });
     }
 });
 

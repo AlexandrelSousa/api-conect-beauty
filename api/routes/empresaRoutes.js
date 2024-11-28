@@ -2,19 +2,17 @@ const express = require('express');
 const pool = require('../db');
 const bcrypt = require('bcryptjs');
 const upload = require('../config/multer');
-const cloudinary = require('../config/cloudinaryConfig'); // Importe a configuração do Cloudinary
-const fs = require('fs'); // Adicione essa linha no topo do arquivo
+const cloudinary = require('../config/cloudinaryConfig');
+const fs = require('fs'); 
 
 const router = express.Router();
 
 router.post('/cadastrar', upload.single('logo'), async (req, res) => {
     try {
-        let logoUrl = null; // Aqui você vai armazenar a URL da imagem no Cloudinary
+        let logoUrl = null;
 
         if (req.file) {
-            // Se o upload for bem-sucedido, o arquivo será automaticamente enviado para o Cloudinary
-            // O arquivo não precisa mais ser removido do sistema de arquivos local
-            logoUrl = req.file.path;  // O caminho para o arquivo será a URL do Cloudinary
+            logoUrl = req.file.path;
         }
 
         const empresa = {
@@ -30,27 +28,23 @@ router.post('/cadastrar', upload.single('logo'), async (req, res) => {
             classificacao: req.body.classificacao || '0',
             inicio_expediente: req.body.inicio_expediente,
             fim_expediente: req.body.fim_expediente,
-            dias_func: req.body.dias_func, // Recebe como string
+            dias_func: req.body.dias_func,
             logo: logoUrl
         };
 
-        // Verifica campos obrigatórios
         for (const key of Object.keys(empresa)) {
             if (!empresa[key] && key !== 'logo') {
                 return res.status(400).json({ message: `${key} é obrigatório!` });
             }
         }
 
-        // Verifica duplicidade de CNPJ
         const cnpjJaExistente = await pool.query('SELECT * FROM empreendedora WHERE cnpj = $1', [empresa.cnpj]);
         if (cnpjJaExistente.rows.length > 0) {
             return res.status(400).json({ message: 'O CNPJ fornecido já está em uso.' });
         }
 
-        // Gera hash da senha
         const hashedPassword = await bcrypt.hash(empresa.senha, 10);
 
-        // Insere os dados no banco
         const insertUserQuery = `
             INSERT INTO empreendedora (
                 cnpj, senha, nome, telefone, cidade, bairro, logradouro, numero,
@@ -72,7 +66,7 @@ router.post('/cadastrar', upload.single('logo'), async (req, res) => {
             empresa.dias_func,
             empresa.inicio_expediente,
             empresa.fim_expediente,
-            empresa.logo // Agora é a URL do Cloudinary
+            empresa.logo
         ]);
 
         res.status(201).send('Empresa registrada com sucesso.');
@@ -84,20 +78,48 @@ router.post('/cadastrar', upload.single('logo'), async (req, res) => {
 
 router.get('/todas', async (req, res) => {
     try {
-        // Consulta todas as empresas na tabela empreendedora
         const empresas = await pool.query('SELECT nome, descricao, cnpj, logo FROM empreendedora');
 
-        // Verifica se foram encontradas empresas
         if (empresas.rows.length === 0) {
             return res.status(404).json({ error: 'Nenhuma empresa encontrada' });
         }
 
-        // Retorna as informações das empresas
         res.json(empresas.rows);
     } catch (error) {
         console.error('Erro ao obter informações das empresas:', error);
         res.status(500).json({ error: 'Erro ao obter informações das empresas' });
     }
 });
+
+router.get('/empresa', async (req, res) => {
+    const token = req.headers['authorization'];
+
+    try {
+        const decodedToken = jwt.decode(token);
+
+        if (!decodedToken || !decodedToken.cnpj) {
+            console.log('Token inválido ou ausente');
+            return res.status(401).json({ error: 'Token inválido ou ausente' });
+        }
+
+        const empresaCnpj = decodedToken.cnpj;
+
+        const empresaQuery = await pool.query(
+            'SELECT nome, descricao, cnpj, telefone, email, logo FROM empreendedora WHERE cnpj = $1',
+            [empresaCnpj]
+        );
+
+        if (empresaQuery.rows.length === 0) {
+            console.log('Empresa não encontrada para o CNPJ:', empresaCnpj);
+            return res.status(404).json({ error: 'Empresa não encontrada' });
+        }
+
+        res.json(empresaQuery.rows[0]);
+    } catch (error) {
+        console.error('Erro ao obter informações da empresa:', error);
+        res.status(500).json({ error: 'Erro ao obter informações da empresa' });
+    }
+});
+
 
 module.exports = router;

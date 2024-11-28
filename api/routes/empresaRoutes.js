@@ -106,7 +106,7 @@ router.get('/', async (req, res) => {
         const empresaCnpj = decodedToken.cnpj;
 
         const empresaQuery = await pool.query(
-            'SELECT nome, descricao, cnpj, telefone, email, logo FROM empreendedora WHERE cnpj = $1',
+            'SELECT * FROM empreendedora WHERE cnpj = $1',
             [empresaCnpj]
         );
 

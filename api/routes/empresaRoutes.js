@@ -127,7 +127,7 @@ router.get('/:id', async (req, res) => {
     try {
         // Consulta o banco de dados para obter as informações da empresa
         const empresaQuery = await pool.query(
-            'SELECT nome, descricao, cnpj, logo FROM empreendedora WHERE id = $1',
+            'SELECT nome, descricao, cnpj, logo FROM empreendedora WHERE cnpj = $1',
             [empresaId]
         );
 

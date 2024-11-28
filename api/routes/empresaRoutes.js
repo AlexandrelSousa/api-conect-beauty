@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const upload = require('../config/multer');
 const cloudinary = require('../config/cloudinaryConfig');
 const fs = require('fs'); 
+const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 

@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth');
 const jwt = require('jsonwebtoken');
 const clienteRoutes = require('./routes/clienteRoutes');
 const empresaRoutes = require('./routes/empresaRoutes');
+const procedimentoRoutes = require('./routes/procedimentoRoutes');
 
 
 dotenv.config();
@@ -42,6 +43,10 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
 app.use('/api/empresa', empresaRoutes);
 console.log('Rota /api/empresa configurada');
+
+app.use('/api/procedimento', procedimentoRoutes);
+console.log('Rota /api/procedimento configurada');
+
 
 const PORT = 3030;
 app.listen(PORT, () => {

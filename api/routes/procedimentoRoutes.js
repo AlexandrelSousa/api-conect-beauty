@@ -100,7 +100,7 @@ router.put('/', async (req, res) => {
 });
 
 
-router.delete('/procedimento', async (req, res) => {
+router.delete('/', async (req, res) => {
     try {
         const token = req.headers['authorization'];
         const { nome, id_pro } = req.body;

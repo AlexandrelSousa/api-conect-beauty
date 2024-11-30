@@ -165,4 +165,36 @@ function horarioEstaNoIntervalo(horario, inicioIntervalo, fimIntervalo) {
     return horarioDate >= inicioIntervaloDate && horarioDate <= fimIntervaloDate;
 }
 
+app.get('/', async (req, res) => {
+    try {
+        const token = req.headers['authorization'];
+
+        if (!token) {
+            return res.status(401).json({ error: 'Token de autorização não fornecido.' });
+        }
+
+        const decodedToken = jwt.decode(token);
+        if (!decodedToken || !decodedToken.cnpj) {
+            return res.status(401).json({ error: 'Token inválido ou CNPJ não encontrado no token.' });
+        }
+
+        const empresaCnpj = decodedToken.cnpj;
+
+        const procedimentos = await pool.query(
+            'SELECT * FROM procedimento WHERE cnpj = $1',
+            [empresaCnpj]
+        );
+
+        if (procedimentos.rowCount === 0) {
+            return res.status(404).json({ error: 'Nenhum procedimento encontrado para este CNPJ.' });
+        }
+
+        res.json(procedimentos.rows);
+    } catch (error) {
+        console.error('Erro ao obter informações do procedimento:', error);
+        res.status(500).json({ error: 'Erro ao obter informações do procedimento.' });
+    }
+});
+
+
 module.exports = router;

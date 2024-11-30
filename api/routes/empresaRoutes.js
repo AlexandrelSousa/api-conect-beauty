@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
-router.post('/', upload.single('logo'), async (req, res) => {
+router.post('/cadastrar', upload.single('logo'), async (req, res) => {
     try {
         let logoUrl = null;
 

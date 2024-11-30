@@ -53,25 +53,52 @@ router.post('/', async (req, res) => {
 
 router.put('/', async (req, res) => {
     try {
-        const { data, hora_inicio, hora_fim, id_emp, id_cli, id_pro } = req.body;
+        const token = req.headers['authorization'];
+        const { nome, descricao, duracao, preco, categoria, nome_antigo } = req.body;
 
-        if (!data || !hora_inicio || !hora_fim || !id_emp || !id_cli || !id_pro) {
-            return res.status(400).json({ error: 'Todos os campos são obrigatórios!' });
+        if (!token) {
+            return res.status(401).json({ error: 'Token de autorização não fornecido.' });
+        }
+
+        const decodedToken = jwt.decode(token);
+        if (!decodedToken || !decodedToken.cnpj) {
+            return res.status(401).json({ error: 'Token inválido ou CNPJ não encontrado no token.' });
+        }
+
+        const empresaId = decodedToken.cnpj;
+
+        const procedimentoFind = await pool.query(
+            'SELECT * FROM procedimento WHERE cnpj = $1 AND nome = $2',
+            [empresaId, nome_antigo]
+        );
+
+        if (procedimentoFind.rowCount === 0) {
+            return res.status(404).json({ error: 'Procedimento não encontrado.' });
+        }
+
+        const procedimentoExists = await pool.query(
+            'SELECT * FROM procedimento WHERE cnpj = $1 AND nome = $2',
+            [empresaId, nome]
+        );
+
+        if (procedimentoExists.rowCount > 0) {
+            return res.status(400).json({ error: 'Já existe um procedimento com este nome em sua conta.' });
         }
 
         const updateQuery = `
-            UPDATE agendamento 
-            SET data = $1, hora_inicio = $2, hora_fim = $3, id_pro = $4 
-            WHERE id_emp = $5 AND id_cli = $6
+            UPDATE procedimento 
+            SET nome = $1, descricao = $2, duracao = $3, preco = $4, categoria = $5
+            WHERE cnpj = $6 AND nome = $7
         `;
-        await pool.query(updateQuery, [data, hora_inicio, hora_fim, id_pro, id_emp, id_cli]);
+        await pool.query(updateQuery, [nome, descricao, duracao, preco, categoria, empresaId, nome_antigo]);
 
-        res.json({ message: 'Informações do agendamento atualizadas com sucesso.' });
+        res.json({ message: 'Informações do procedimento atualizadas com sucesso.' });
     } catch (error) {
-        console.error('Erro ao atualizar agendamento:', error);
-        res.status(500).json({ error: 'Erro ao atualizar informações do agendamento.' });
+        console.error('Erro ao atualizar procedimento:', error);
+        res.status(500).json({ error: 'Erro ao atualizar informações do procedimento.' });
     }
 });
+
 
 router.delete('/', async (req, res) => {
     try {
@@ -152,18 +179,6 @@ router.get('/:cnpj', async (req, res) => {
         res.status(500).json({ error: 'Erro ao consultar procedimentos.' });
     }
 });
-
-function horarioEstaNoIntervalo(horario, inicioIntervalo, fimIntervalo) {
-    const iniIntDate = "2024-04-20T" + inicioIntervalo + ":00"
-    const fimIntDate = "2024-04-20T" + fimIntervalo + ":00"
-    const horarioIntDate = "2024-04-20T" + horario
-
-    const horarioDate = new Date(horarioIntDate);
-    const inicioIntervaloDate = new Date(iniIntDate);
-    const fimIntervaloDate = new Date(fimIntDate);
-
-    return horarioDate >= inicioIntervaloDate && horarioDate <= fimIntervaloDate;
-}
 
 router.get('/', async (req, res) => {
     try {

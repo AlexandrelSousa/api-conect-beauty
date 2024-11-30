@@ -14,9 +14,9 @@ router.post('/', async (req, res) => {
     try {
         const empresaCnpj = jwt.decode(token).cnpj;
 
-        const { nome, descricao, duracao, preco, categoria, classificacao } = req.body;
+        const { nome, descricao, duracao, preco, categoria } = req.body;
 
-        const camposObrigatorios = { nome, descricao, duracao, preco, categoria, classificacao };
+        const camposObrigatorios = { nome, descricao, duracao, preco, categoria };
         for (const [campo, valor] of Object.entries(camposObrigatorios)) {
             if (!valor) {
                 return res.status(400).json({ message: `${campo} é obrigatório!` });
@@ -32,8 +32,8 @@ router.post('/', async (req, res) => {
         }
 
         const insertProcedimentoQuery = `
-            INSERT INTO procedimento (nome, descricao, duracao, preco, categoria, classificacao, cnpj)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            INSERT INTO procedimento (nome, descricao, duracao, preco, categoria, cnpj)
+            VALUES ($1, $2, $3, $4, $5, $6)
         `;
         await pool.query(insertProcedimentoQuery, [
             nome,
@@ -41,7 +41,6 @@ router.post('/', async (req, res) => {
             duracao,
             preco,
             categoria,
-            classificacao,
             empresaCnpj,
         ]);
 

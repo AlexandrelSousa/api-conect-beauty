@@ -165,7 +165,7 @@ function horarioEstaNoIntervalo(horario, inicioIntervalo, fimIntervalo) {
     return horarioDate >= inicioIntervaloDate && horarioDate <= fimIntervaloDate;
 }
 
-app.get('/', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const token = req.headers['authorization'];
 

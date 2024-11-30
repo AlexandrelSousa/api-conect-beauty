@@ -100,31 +100,42 @@ router.put('/', async (req, res) => {
 });
 
 
-router.delete('/', async (req, res) => {
+router.delete('/procedimento', async (req, res) => {
     try {
-        const { data, hora_inicio } = req.body;
+        const token = req.headers['authorization'];
+        const { nome, id_pro } = req.body;
 
-        if (!data || !hora_inicio) {
-            return res.status(400).json({ error: 'Os campos "data" e "hora_inicio" são obrigatórios!' });
+        if (!token) {
+            return res.status(401).json({ error: 'Token de autorização não fornecido.' });
         }
 
-        const agendamentoExists = await pool.query(
-            'SELECT * FROM agendamento WHERE data = $1 AND hora_inicio = $2',
-            [data, hora_inicio]
+        const decodedToken = jwt.decode(token);
+        if (!decodedToken || !decodedToken.cnpj) {
+            return res.status(401).json({ error: 'Token inválido ou CNPJ não encontrado no token.' });
+        }
+
+        const empresaId = decodedToken.cnpj;
+
+        const procedimentoExists = await pool.query(
+            'SELECT * FROM procedimento WHERE nome = $1 AND cnpj = $2',
+            [nome, empresaId]
         );
 
-        if (agendamentoExists.rowCount === 0) {
-            return res.status(404).json({ error: 'Agendamento não encontrado.' });
+        if (procedimentoExists.rowCount === 0) {
+            return res.status(404).json({ error: 'Procedimento não encontrado.' });
         }
 
-        await pool.query('DELETE FROM agendamento WHERE data = $1 AND hora_inicio = $2', [data, hora_inicio]);
+        await pool.query('DELETE FROM agendamento WHERE id_pro = $1', [id_pro]);
 
-        res.json({ message: 'Agendamento deletado com sucesso.' });
+        await pool.query('DELETE FROM procedimento WHERE nome = $1 AND cnpj = $2', [nome, empresaId]);
+
+        res.json({ message: 'Procedimento e agendamentos associados deletados com sucesso.' });
     } catch (error) {
-        console.error('Erro ao deletar agendamento:', error);
-        res.status(500).json({ error: 'Erro ao deletar agendamento.' });
+        console.error('Erro ao deletar procedimento:', error);
+        res.status(500).json({ error: 'Erro ao deletar procedimento.' });
     }
 });
+
 
 router.get('/filtro', async (req, res) => {
     try {

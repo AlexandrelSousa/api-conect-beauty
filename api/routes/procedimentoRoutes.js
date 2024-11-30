@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
-app.post('/', async (req, res) => {
+router.post('/', async (req, res) => {
     const token = req.headers['authorization'];
 
     try {
@@ -52,7 +52,7 @@ app.post('/', async (req, res) => {
     }
 });
 
-app.put('/', async (req, res) => {
+router.put('/', async (req, res) => {
     try {
         const { data, hora_inicio, hora_fim, id_emp, id_cli, id_pro } = req.body;
 
@@ -74,7 +74,7 @@ app.put('/', async (req, res) => {
     }
 });
 
-app.delete('/', async (req, res) => {
+router.delete('/', async (req, res) => {
     try {
         const { data, hora_inicio } = req.body;
 
@@ -100,7 +100,7 @@ app.delete('/', async (req, res) => {
     }
 });
 
-app.get('/filtro', async (req, res) => {
+router.get('/filtro', async (req, res) => {
     try {
         const { categoria } = req.query;
 
@@ -132,7 +132,7 @@ app.get('/filtro', async (req, res) => {
     }
 });
 
-app.get('/:cnpj', async (req, res) => {
+router.get('/:cnpj', async (req, res) => {
     try {
         const { cnpj } = req.params;
 

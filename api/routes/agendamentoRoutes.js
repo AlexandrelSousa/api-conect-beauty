@@ -11,9 +11,9 @@ const router = express.Router();
 router.post('/', async (req, res) => {
     const token = req.headers['authorization'];
     const id_cli = jwt.decode(token).id;
-    console.log('ID_CLI:' + clienteId + '\nDados recebidos:', req.body);
+    console.log('ID_CLI:' + id_cli + '\nDados recebidos:', req.body);
     try {
-        if (!clienteId) {
+        if (!id_cli) {
             return res.status(401).json({ error: 'Token inválido ou cliente não autenticado.' });
         }
 
@@ -65,7 +65,7 @@ router.post('/', async (req, res) => {
             INSERT INTO agendamento (id_cli, id_pro, id_emp, data, hora_inicio, hora_fim)
             VALUES ($1, $2, $3, $4, $5, $6)
         `;
-        await pool.query(insertQuery, [clienteId, id_pro, cnpj, data, hora_inicio, hora_fim]);
+        await pool.query(insertQuery, [id_cli, id_pro, cnpj, data, hora_inicio, hora_fim]);
 
         res.status(201).json({ message: 'Agendamento registrado com sucesso!' });
 

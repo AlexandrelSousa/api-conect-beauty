@@ -9,18 +9,17 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 
 router.post('/', async (req, res) => {
-    console.log('Dados recebidos:', req.body);
     const token = req.headers['authorization'];
-    
+    const clienteId = jwt.decode(token).id;
+    console.log('ID_CLI:' + clienteId + '\nDados recebidos:', req.body);
     try {
-        const clienteId = jwt.decode(token).id;
         if (!clienteId) {
             return res.status(401).json({ error: 'Token inválido ou cliente não autenticado.' });
         }
 
         const { id_pro, cnpj, data, hora_inicio, hora_fim } = req.body;
 
-        const camposObrigatorios = { id_pro, cnpj, data, hora_inicio, hora_fim };
+        const camposObrigatorios = { id_pro, cnpj, data, hora_inicio, hora_fim, id_cli };
         for (const [campo, valor] of Object.entries(camposObrigatorios)) {
             if (!valor) {
                 return res.status(400).json({ error: `${campo} é obrigatório!` });

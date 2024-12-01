@@ -148,16 +148,18 @@ router.get('/:cnpj', async (req, res) => {
 });
 
 router.put('/', async (req, res) => {
-    const { data, hora_inicio, hora_fim, id_emp, id_cli, id_pro } = req.body;
+    const token = req.headers['authorization'];
+    const id_cli = jwt.decode(token).id;
+    const { data, hora_inicio, hora_fim, cnpj, id_pro } = req.body;
 
-    if (!data || !hora_inicio || !hora_fim || !id_emp || !id_cli || !id_pro) {
+    if (!data || !hora_inicio || !hora_fim || !cnpj || !id_cli || !id_pro) {
         return res.status(400).json({ error: 'Todos os campos são obrigatórios: data, hora_inicio, hora_fim, id_emp, id_cli e id_pro.' });
     }
 
     try {
         const agendamentoExistente = await pool.query(
             'SELECT * FROM agendamento WHERE id_emp = $1 AND id_cli = $2',
-            [id_emp, id_cli]
+            [cnpj, id_cli]
         );
 
         if (agendamentoExistente.rows.length === 0) {
@@ -169,7 +171,7 @@ router.put('/', async (req, res) => {
             SET data = $1, hora_inicio = $2, hora_fim = $3, id_pro = $4
             WHERE id_emp = $5 AND id_cli = $6
         `;
-        await pool.query(updateQuery, [data, hora_inicio, hora_fim, id_pro, id_emp, id_cli]);
+        await pool.query(updateQuery, [data, hora_inicio, hora_fim, id_pro, cnpj, id_cli]);
 
         res.status(200).json({ message: 'Informações do agendamento atualizadas com sucesso.' });
     } catch (error) {

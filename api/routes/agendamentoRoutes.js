@@ -13,7 +13,7 @@ router.post('/', async (req, res) => {
     const token = req.headers['authorization'];
     
     try {
-        const clienteId = jwt.decode(token)?.id;
+        const clienteId = jwt.decode(token).id;
         if (!clienteId) {
             return res.status(401).json({ error: 'Token inválido ou cliente não autenticado.' });
         }

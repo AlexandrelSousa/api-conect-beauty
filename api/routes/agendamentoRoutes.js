@@ -208,12 +208,15 @@ router.delete('/', async (req, res) => {
 });
 
 
-function horarioEstaNoIntervalo(horario, inicioIntervalo, fimIntervalo) {
-    const horarioDate = new Date(`1970-01-01T${horario}:00`);
-    const inicioIntervaloDate = new Date(`1970-01-01T${inicioIntervalo}:00`);
-    const fimIntervaloDate = new Date(`1970-01-01T${fimIntervalo}:00`);
+const horarioDisponivel = agendamentosExistentes.rows.every(({ hora_inicio: inicioExistente, hora_fim: fimExistente }) => {
+    const inicioNovo = new Date(`1970-01-01T${hora_inicio}:00`);
+    const fimNovo = new Date(`1970-01-01T${hora_fim}:00`);
+    const inicioExist = new Date(`1970-01-01T${inicioExistente}:00`);
+    const fimExist = new Date(`1970-01-01T${fimExistente}:00`);
+    
+    // Garantir que a comparação entre horários não seja falha
+    return (fimNovo <= inicioExist || inicioNovo >= fimExist); // Verifica se não há sobreposição
+});
 
-    return horarioDate >= inicioIntervaloDate && horarioDate <= fimIntervaloDate;
-}
 
 module.exports = router;

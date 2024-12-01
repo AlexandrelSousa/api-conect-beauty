@@ -208,4 +208,12 @@ router.delete('/', async (req, res) => {
 });
 
 
+function horarioEstaNoIntervalo(horario, inicioIntervalo, fimIntervalo) {
+    const horarioDate = new Date(`1970-01-01T${horario}:00`);
+    const inicioIntervaloDate = new Date(`1970-01-01T${inicioIntervalo}:00`);
+    const fimIntervaloDate = new Date(`1970-01-01T${fimIntervalo}:00`);
+
+    return horarioDate >= inicioIntervaloDate && horarioDate <= fimIntervaloDate;
+}
+
 module.exports = router;

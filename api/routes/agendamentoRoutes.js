@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post('/', async (req, res) => {
     const token = req.headers['authorization'];
-    const clienteId = jwt.decode(token).id;
+    const id_cli = jwt.decode(token).id;
     console.log('ID_CLI:' + clienteId + '\nDados recebidos:', req.body);
     try {
         if (!clienteId) {

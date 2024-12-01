@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post('/', async (req, res) => {
     const token = req.headers['authorization'];
-    const id_cli = jwt.decode(token).id;
+    const id_cli = BigInt(jwt.decode(token).id);
     console.log('ID_CLI:' + id_cli + '\nDados recebidos:', req.body);
     try {
         if (!id_cli) {
@@ -60,7 +60,8 @@ router.post('/', async (req, res) => {
         if (!horarioDisponivel) {
             return res.status(400).json({ error: 'Já existe outro agendamento nesse horário.' });
         }
-
+        
+        console.log('ID_CLI:' + id_cli + '\nid_pro:' + id_pro + '\nid_emp: ' + cnpj + '\ndata: ' + data + '\nhora_inicio: ' + hora_inicio + '\nhora_fim: ' + hora_fim);   
         const insertQuery = `
             INSERT INTO agendamento (id_cli, id_pro, id_emp, data, hora_inicio, hora_fim)
             VALUES ($1, $2, $3, $4, $5, $6)

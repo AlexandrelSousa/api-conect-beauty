@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 const clienteRoutes = require('./routes/clienteRoutes');
 const empresaRoutes = require('./routes/empresaRoutes');
 const procedimentoRoutes = require('./routes/procedimentoRoutes');
-
+const agendamentoRoutes = require('./routes/agendamentoRoutes');
 
 dotenv.config();
 
@@ -47,6 +47,8 @@ console.log('Rota /api/empresa configurada');
 app.use('/api/procedimento', procedimentoRoutes);
 console.log('Rota /api/procedimento configurada');
 
+app.use('/api/agendamento', agendamentoRoutes);
+console.log('Rota /api/agendamento configurada');
 
 const PORT = 3030;
 app.listen(PORT, () => {

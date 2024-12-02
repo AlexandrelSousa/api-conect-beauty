@@ -3,7 +3,7 @@ const pool = require('../db');
 const bcrypt = require('bcryptjs');
 const upload = require('../config/multer');
 const cloudinary = require('../config/cloudinaryConfig');
-const fs = require('fs'); 
+const fs = require('fs');
 const jwt = require('jsonwebtoken');
 
 const router = express.Router();
@@ -53,15 +53,15 @@ router.post('/', async (req, res) => {
             const fimNovo = new Date(`1970-01-01T${hora_fim}:00`);
             const inicioExist = new Date(`1970-01-01T${inicioExistente}:00`);
             const fimExist = new Date(`1970-01-01T${fimExistente}:00`);
-            
+
             return (fimNovo <= inicioExist || inicioNovo >= fimExist); // Sem sobreposição
         });
 
         if (!horarioDisponivel) {
             return res.status(400).json({ error: 'Já existe outro agendamento nesse horário.' });
         }
-        
-        console.log('ID_CLI:' + id_cli + '\nid_pro:' + id_pro + '\nid_emp: ' + cnpj + '\ndata: ' + data + '\nhora_inicio: ' + hora_inicio + '\nhora_fim: ' + hora_fim);   
+
+        console.log('ID_CLI:' + id_cli + '\nid_pro:' + id_pro + '\nid_emp: ' + cnpj + '\ndata: ' + data + '\nhora_inicio: ' + hora_inicio + '\nhora_fim: ' + hora_fim);
         const insertQuery = `
             INSERT INTO agendamento (id_cli, id_pro, id_emp, data, hora_inicio, hora_fim)
             VALUES ($1, $2, $3, $4, $5, $6)
@@ -129,10 +129,11 @@ router.get('/:cnpj', async (req, res) => {
 
         const agendamento = await pool.query(
             `SELECT ag.*, cli.nome AS cliente_nome, pro.nome AS procedimento_nome
-             FROM agendamento ag
-             JOIN cliente cli ON ag.id_cli = cli.id
-             JOIN procedimento pro ON ag.id_pro = pro.id
-             WHERE ag.id_emp = $1`,
+            FROM agendamento ag
+            JOIN cliente cli ON ag.id_cli = cli.id
+            JOIN procedimento pro ON ag.id_pro = pro.id_pro
+            WHERE ag.id_emp = $1;
+            `,
             [cnpj]
         );
 

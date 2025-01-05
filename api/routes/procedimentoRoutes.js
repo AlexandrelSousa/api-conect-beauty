@@ -222,4 +222,29 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.get('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json({ error: 'ID do procedimento não fornecido.' });
+        }
+
+        const procedimento = await pool.query(
+            'SELECT * FROM procedimento WHERE id_pro = $1',
+            [id]
+        );
+
+        if (procedimento.rowCount === 0) {
+            return res.status(404).json({ error: 'Procedimento não encontrado para o ID fornecido.' });
+        }
+
+        res.json(procedimento.rows[0]); // Retorna apenas o objeto do procedimento específico
+    } catch (error) {
+        console.error('Erro ao obter informações do procedimento:', error);
+        res.status(500).json({ error: 'Erro ao obter informações do procedimento.' });
+    }
+});
+
+
 module.exports = router;

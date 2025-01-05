@@ -100,7 +100,7 @@ router.get('/', async (req, res) => {
         } else {
             id = decodedToken.id;
             agendamento = await pool.query(
-                `SELECT ag.*, emp.nome_fantasia AS empresa_nome, pro.nome AS procedimento_nome 
+                `SELECT ag.*, emp.nome AS empresa_nome, pro.nome AS procedimento_nome 
                 FROM agendamento ag
                 JOIN empreendedora emp ON ag.id_emp = emp.cnpj
                 JOIN procedimento pro ON ag.id_pro = pro.id_pro
